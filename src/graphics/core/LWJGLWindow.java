@@ -1,0 +1,38 @@
+package graphics.core;
+
+import org.lwjgl.LWJGLException;
+import org.lwjgl.opengl.Display;
+import org.lwjgl.opengl.DisplayMode;
+
+public abstract class LWJGLWindow {
+    public int WIDTH, HEIGHT;
+    public String TITLE;
+
+    public LWJGLWindow() {
+        this("Window", 1280, 720);
+    }
+
+    public LWJGLWindow(String title, int width, int height) {
+        this.TITLE = title;
+        this.WIDTH = width;
+        this.HEIGHT = height;
+    }
+
+    public void initDisplay() {
+        try {
+            Display.setDisplayMode(new DisplayMode(WIDTH, HEIGHT));
+            Display.setTitle(TITLE);
+            Display.create();
+        } catch (LWJGLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void start() {
+        renderLoop();
+        Display.destroy();
+        System.exit(0);
+    }
+
+    public abstract void renderLoop();
+}
