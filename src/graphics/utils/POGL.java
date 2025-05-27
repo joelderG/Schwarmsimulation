@@ -9,6 +9,9 @@ import org.lwjgl.util.vector.Vector3f;
 import java.io.*;
 import static org.lwjgl.opengl.GL11.*;
 
+// improvements
+// TODO: maybe check for OpenGL errors in rendering methods
+
 public class POGL {
     private POGL() {}
 

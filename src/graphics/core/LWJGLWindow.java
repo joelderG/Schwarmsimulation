@@ -4,6 +4,11 @@ import org.lwjgl.LWJGLException;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.DisplayMode;
 
+// improvements
+// TODO: methods for handling input (keyboard, mouse) within LWJGLWindow
+// or providing interfaces/callbacks for input handling
+// TODO: improve error handling -> throw custom exceptions or using a logging mechanism
+
 public abstract class LWJGLWindow {
     public int WIDTH, HEIGHT;
     public String TITLE;
