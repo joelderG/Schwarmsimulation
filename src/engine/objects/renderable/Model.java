@@ -1,5 +1,6 @@
-package graphics.objects;
+package engine.objects.renderable;
 
+import engine.objects.geometry.faceTriangle;
 import org.lwjgl.util.vector.Vector2f;
 import org.lwjgl.util.vector.Vector3f;
 

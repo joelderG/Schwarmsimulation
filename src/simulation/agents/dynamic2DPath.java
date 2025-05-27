@@ -1,6 +1,6 @@
-package graphics.simulation;
+package simulation.agents;
 
-import graphics.math.Vector2D;
+import engine.math.Vector2D;
 
 import java.util.ArrayList;
 

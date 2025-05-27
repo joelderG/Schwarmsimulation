@@ -1,9 +1,9 @@
-package graphics.utils;
+package engine.core;
 
-import graphics.math.linearAlgebra;
-import graphics.math.Vector2D;
-import graphics.objects.Model;
-import graphics.objects.faceTriangle;
+import engine.math.linearAlgebra;
+import engine.math.Vector2D;
+import engine.objects.renderable.Model;
+import engine.objects.geometry.faceTriangle;
 import org.lwjgl.util.vector.Vector2f;
 import org.lwjgl.util.vector.Vector3f;
 import java.io.*;
@@ -11,9 +11,10 @@ import static org.lwjgl.opengl.GL11.*;
 
 // improvements
 // TODO: maybe check for OpenGL errors in rendering methods
+// opengl standard methods
 
-public class POGL {
-    private POGL() {}
+public class Renderer {
+    private Renderer() {}
 
     public static void renderCircle(float x, float y, float step, float radius) {
         glBegin(GL_TRIANGLE_FAN);

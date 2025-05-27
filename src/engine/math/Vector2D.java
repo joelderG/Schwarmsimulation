@@ -1,4 +1,4 @@
-package graphics.math;
+package engine.math;
 
 public class Vector2D {
     public double x, y;

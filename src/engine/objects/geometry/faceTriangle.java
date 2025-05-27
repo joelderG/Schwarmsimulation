@@ -1,4 +1,4 @@
-package graphics.objects;
+package engine.objects.geometry;
 
 import org.lwjgl.util.vector.Vector3f;
 

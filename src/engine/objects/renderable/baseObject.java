@@ -1,6 +1,6 @@
-package graphics.objects;
+package engine.objects.renderable;
 
-import graphics.math.Vector2D;
+import engine.math.Vector2D;
 
 // improvements
 // TODO: consider adding more common attributes like: color, rotation (angle), scale

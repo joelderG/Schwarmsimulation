@@ -1,4 +1,4 @@
-package graphics.core;
+package engine.core;
 
 import org.lwjgl.LWJGLException;
 import org.lwjgl.opengl.Display;
@@ -9,15 +9,15 @@ import org.lwjgl.opengl.DisplayMode;
 // or providing interfaces/callbacks for input handling
 // TODO: improve error handling -> throw custom exceptions or using a logging mechanism
 
-public abstract class LWJGLWindow {
+public abstract class Window {
     public int WIDTH, HEIGHT;
     public String TITLE;
 
-    public LWJGLWindow() {
+    public Window() {
         this("Window", 1280, 720);
     }
 
-    public LWJGLWindow(String title, int width, int height) {
+    public Window(String title, int width, int height) {
         this.TITLE = title;
         this.WIDTH = width;
         this.HEIGHT = height;

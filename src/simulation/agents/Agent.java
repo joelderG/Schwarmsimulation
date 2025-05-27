@@ -1,8 +1,9 @@
-package graphics.objects;
+package simulation.agents;
 
-import graphics.math.Vector2D;
+import engine.math.Vector2D;
+import engine.objects.renderable.baseObject;
 
-public abstract class movingObject extends baseObject {
+public abstract class Agent extends baseObject {
     public Vector2D acceleration;
     public Vector2D lastAcceleration;
     public Vector2D velocity;
