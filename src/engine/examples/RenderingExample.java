@@ -3,6 +3,7 @@ package engine.examples;
 import engine.core.Renderer;
 import engine.core.Window;
 import engine.objects.renderable.Model;
+import engine.rendering.ModelLoadException;
 import engine.rendering.ModelLoader;
 import engine.rendering.PrimitiveRenderer;
 import org.lwjgl.opengl.Display;
@@ -41,10 +42,10 @@ public class RenderingExample extends Window {
             // render2DScene();
 
             // paints model in 3D
-            //showModel();
+            showModel();
 
             // shows different 3D objects
-            renderMultiple3DObjects();
+            // renderMultiple3DObjects();
 
             Display.update();
             Display.sync(60);
@@ -98,7 +99,7 @@ public class RenderingExample extends Window {
     private void loadModel(String path) {
         try {
             loadedModel = ModelLoader.loadObjModel(path);
-        } catch (IOException e) {
+        } catch (ModelLoadException e) {
             e.printStackTrace();
             loadedModel = null;
         }
