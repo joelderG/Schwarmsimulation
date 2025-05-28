@@ -124,6 +124,7 @@ public class Renderer {
     }
 
     public static void renderModel(Model model) {
+        glPushMatrix();
         glBegin(GL_TRIANGLES);
         for (faceTriangle face : model.faces) {
             if (face.normal != null) {
