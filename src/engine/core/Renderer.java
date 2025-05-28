@@ -16,38 +16,6 @@ import static org.lwjgl.opengl.GL11.*;
 public class Renderer {
     private Renderer() {}
 
-    public static void renderCircle(float x, float y, float step, float radius) {
-        glBegin(GL_TRIANGLE_FAN);
-        glVertex2f(x, y); // Mittelpunkt
-
-        for(int angle = 0; angle <= 360; angle += step) {
-            double radians = Math.toRadians(angle);
-            glVertex2f(x + (float) Math.cos(radians) * radius,
-                    y + (float) Math.sin(radians) * radius);
-        }
-        glEnd();
-    }
-
-    public static void renderArrow(float x, float y, int off, float winkel, int size) {
-        glLoadIdentity();
-        glTranslated(x, y, 0);
-
-        glRotatef(winkel, 0, 0, 1);
-        glTranslated(off, 0, 0);
-        glScaled(size, size, size);
-
-        glBegin(GL_LINES);
-        glVertex3d(  0f,  0f, 0);
-        glVertex3d(-off/15., 0, 0);
-        glEnd();
-
-        glBegin(GL_TRIANGLES);
-        glVertex3d(  0f,  .2f, 0);
-        glVertex3d(  0f, -.2f, 0);
-        glVertex3d( .5f,   0f, 0);
-        glEnd();
-    }
-
     public static void clearBackgroundWithColor(float r, float g, float b, float a) {
         glClearColor(r,g,b,a);
         glClear(GL_COLOR_BUFFER_BIT);
@@ -58,67 +26,105 @@ public class Renderer {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     }
 
-    public static Model loadModel(File file) throws FileNotFoundException, IOException {
-        BufferedReader reader = new BufferedReader(new FileReader(file));
-        Model model = new Model();
-        String line;
-        String[] lineElements;
-        float x, y, z;
-        Vector3f vertexIndices = null;
-        Vector3f texCoordsIndices = null;
-        Vector3f normalIndices = null;
-
-        while((line = reader.readLine()) != null) {
-            if (line.startsWith("v ")) {
-                lineElements = line.split(" ");
-                x = Float.valueOf(lineElements[1]);
-                y = Float.valueOf(lineElements[2]);
-                z = Float.valueOf(lineElements[3]);
-                model.vertices.add(new Vector3f(x, y, z));
-            } else if (line.startsWith("vn ")) {
-                lineElements = line.split(" ");
-                x = Float.valueOf(lineElements[1]);
-                y = Float.valueOf(lineElements[2]);
-                z = Float.valueOf(lineElements[3]);
-                model.normals.add(new Vector3f(x, y, z));
-            } else if (line.startsWith("vt ")) {
-                lineElements = line.split(" ");
-                x = Float.valueOf(lineElements[1]);
-                y = Float.valueOf(lineElements[2]);
-                model.texCoords.add(new Vector2f(x, y));
-            } else if (line.startsWith("f ")) {
-                vertexIndices 		= null;
-                texCoordsIndices 	= null;
-                normalIndices 		= null;
-
-                lineElements = line.split(" ");
-                if (line.contains("/") && lineElements[1].split("/").length > 1) {
-                    vertexIndices = new Vector3f(Float.valueOf(lineElements[1].split("/")[0]),
-                            Float.valueOf(lineElements[2].split("/")[0]),
-                            Float.valueOf(lineElements[3].split("/")[0]));
-                    texCoordsIndices = new Vector3f(Float.valueOf(line.split(" ")[1].split("/")[1]),
-                            Float.valueOf(lineElements[2].split("/")[1]),
-                            Float.valueOf(lineElements[3].split("/")[1]));
-                    if (lineElements[1].split("/").length == 3) {
-                        normalIndices = new Vector3f(Float.valueOf(lineElements[1].split("/")[2]),
-                                Float.valueOf(lineElements[2].split("/")[2]),
-                                Float.valueOf(lineElements[3].split("/")[2]));
-                    }
-                } else {
-                    // nur drei Vertices f�r ein Dreieck vorhanden
-                    vertexIndices = new Vector3f(
-                            Float.valueOf(lineElements[1]),
-                            Float.valueOf(lineElements[2]),
-                            Float.valueOf(lineElements[3]));
-                }
-                model.faces.add(new faceTriangle(vertexIndices, texCoordsIndices, normalIndices));
-            }
-        }
-        reader.close();
-        return model;
+    public static void clearColorBuffer() {
+        glClear(GL_COLOR_BUFFER_BIT);
     }
 
-    public static void renderObject(Model model) {
+    public static void clearDepthBuffer() {
+        glClear(GL_DEPTH_BUFFER_BIT);
+    }
+
+    public static void clearBuffers() {
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    }
+
+    public static void setColor(float r, float g, float b, float a) {
+        glColor4f(r,g,b,a);
+    }
+
+    public static void setColor(float r, float g, float b) {
+        glColor4f(r,g,b,1.0f);
+    }
+
+    public static void resetColor() {
+        glColor4f(1.0f,1.0f,1.0f,1.0f);
+    }
+
+    public static void pushMatrix() {
+        glPushMatrix();
+    }
+
+    public static void popMatrix() {
+        glPopMatrix();
+    }
+
+    public static void loadIdentity() {
+        glLoadIdentity();
+    }
+
+    public static void translate(float x, float y, float z) {
+        glTranslatef(x,y,z);
+    }
+
+    public static void rotate(float angle, float x, float y, float z) {
+        glRotatef(angle,x,y,z);
+    }
+
+    public static void scale(float x, float y, float z) {
+        glScalef(x, y, z);
+    }
+
+    public static void scale(float scale) {
+        glScalef(scale, scale, scale);
+    }
+
+    public static void enableDepthTest() {
+        glEnable(GL_DEPTH_TEST);
+    }
+
+    public static void disableDepthTest() {
+        glDisable(GL_DEPTH_TEST);
+    }
+
+    public static void enableBlending() {
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    }
+
+    public static void disableBlending() {
+        glDisable(GL_BLEND);
+    }
+
+    public static void setLineWidth(float width) {
+        glLineWidth(width);
+    }
+
+    public static void setPointSize(float size) {
+        glPointSize(size);
+    }
+
+    public static void bindTexture(int textureId) {
+        glBindTexture(GL_TEXTURE_2D, textureId);
+    }
+
+    public static void unbindTexture() {
+        glBindTexture(GL_TEXTURE_2D, 0);
+    }
+
+    public static void enableTexture2D() {
+        glEnable(GL_TEXTURE_2D);
+    }
+
+    public static void disableTexture2D() {
+        glDisable(GL_TEXTURE_2D);
+    }
+
+    public static void setViewport(int x, int y, int width, int height) {
+        glViewport(x,y,width,height);
+    }
+
+    public static void renderModel(Model model) {
+        glPushMatrix();
         glBegin(GL_TRIANGLES);
         for (faceTriangle face : model.faces) {
             if (face.normal != null) {
@@ -158,36 +164,100 @@ public class Renderer {
         glPopMatrix();
     }
 
-    public static void renderObjectWithForces(float x, float y, int radius, Vector2D velocity, Vector2D acceleration) {
-        glLoadIdentity();
-        glTranslated(x, y, 0);
-
-        glColor4f(0.05f, 0.39f, 0.51f, 1.0f);
-        renderCircle(0, 0, 5, radius);
-        glColor4f(0.66f, 0.87f, 0.95f, 1.0f);
-        // TODO: radius-2 hardcoded
-        renderCircle(0, 0, 5, radius-2);
-
-        // velocity
-        // TODO: velocity.length()/5 hardcoded
-        int off = radius + 1 + (int)(velocity.length()/5);
-        double angle = linearAlgebra.angleDegree(velocity, new Vector2D(1,0));
-
-        // angle correction
-        if (velocity.y<0)
-            angle = 180 + (180-angle);
-
-        glColor4f(0.35f, 0.63f, 0.73f, 1.0f);
-        renderArrow(x, y, off, (float)angle, 15);
-
-        // Acceleration
-        off = radius + 1 + (int)(acceleration.length()/10);
-        angle = linearAlgebra.angleDegree(acceleration, new Vector2D(1,0));
-        if (acceleration.y<0)
-            angle = 180 + (180-angle);
-
-        glColor4f(1, 0, 0, 1);
-        renderArrow(x, y, off, (float)angle, 15);
-
+    public static void renderModelTransformed(Model model, float x, float y, float z, float rotationAngle, float rotationX, float rotationY, float rotationZ, float scale) {
+        pushMatrix();
+        translate(x,y,z);
+        rotate(rotationAngle, rotationX, rotationY, rotationZ);
+        scale(scale);
+        renderModel(model);
+        popMatrix();
     }
+
+    public static void init() {
+        glShadeModel(GL_SMOOTH);
+        glColor4f(1.0f,1.0f,1.0f,1.0f);
+        glLineWidth(1.0f);
+        glPointSize(1.0f);
+        glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
+    }
+
+    public static void setup2D(int width, int height) {
+        glDisable(GL_DEPTH_TEST);
+        glDisable(GL_CULL_FACE);
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        glViewport(0,0,width,height);
+        glMatrixMode(GL_PROJECTION);
+        glLoadIdentity();
+        glOrtho(0,width,height,0,0,1);
+        glMatrixMode(GL_MODELVIEW);
+        glLoadIdentity();
+    }
+
+    public static void setup2DCustom(float left, float right, float bottom, float top) {
+        glDisable(GL_DEPTH_TEST);
+        glDisable(GL_CULL_FACE);
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+        glMatrixMode(GL_PROJECTION);
+        glLoadIdentity();
+        glOrtho(left, right, bottom, top, -1, 1);
+
+        glMatrixMode(GL_MODELVIEW);
+        glLoadIdentity();
+    }
+
+    public static void setup3D(int width, int height, float fov, float nearPlane, float farPlane) {
+        // Enable depth test for 3D
+        glEnable(GL_DEPTH_TEST);
+        glDepthFunc(GL_LEQUAL);
+        glClearDepth(1.0);
+
+        // Enable backface culling for performance
+        glEnable(GL_CULL_FACE);
+        glCullFace(GL_BACK);
+        glFrontFace(GL_CCW);
+
+        // Enable blending
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+        // Enable normalize for proper lighting
+        glEnable(GL_NORMALIZE);
+
+        // Set viewport
+        glViewport(0, 0, width, height);
+
+        // Set projection matrix for 3D perspective
+        glMatrixMode(GL_PROJECTION);
+        glLoadIdentity();
+
+        // Calculate perspective
+        float aspect = (float) width / (float) height;
+        float fH = (float) Math.tan(Math.toRadians(fov) / 2.0) * nearPlane;
+        float fW = fH * aspect;
+        glFrustum(-fW, fW, -fH, fH, nearPlane, farPlane);
+
+        // Set modelview matrix
+        glMatrixMode(GL_MODELVIEW);
+        glLoadIdentity();
+    }
+
+    public static void init2D(int width, int height) {
+        init();
+        setup2D(width, height);
+
+        // Set light gray background like your example
+        glClearColor(0.95f, 0.95f, 0.95f, 1.0f);
+    }
+
+    public static void init3D(int width, int height) {
+        init();
+        setup3D(width, height, 45.0f, 0.1f, 1000.0f);
+
+        // Set dark gray background for 3D
+        glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+    }
+
 }
