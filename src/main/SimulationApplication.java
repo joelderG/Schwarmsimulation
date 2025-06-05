@@ -26,11 +26,6 @@ public class SimulationApplication extends Window {
     private boolean paused = false;
     private boolean showPaths = false;
 
-    // UI Parameter (können später mit echtem UI ersetzt werden)
-    private double separationWeight = 2.0;
-    private double alignmentWeight = 1.0;
-    private double cohesionWeight = 1.0;
-
     public SimulationApplication(String title, int w, int h) {
         super(title, w, h);
         initDisplay();
@@ -204,17 +199,23 @@ public class SimulationApplication extends Window {
     }
 
     private void renderUI() {
-        // Einfache Text-Ausgabe in der Konsole für Debug-Info
-        // (Echtes UI könnte später hinzugefügt werden)
-
-        // Status in Fenstertitel anzeigen
-        String title = String.format("Schwarmsimulation - Agenten: %d | %s | Sep: %.1f, Ali: %.1f, Coh: %.1f",
-                agents.size(),
-                paused ? "PAUSIERT" : "LÄUFT",
-                separationWeight,
-                alignmentWeight,
-                cohesionWeight
-        );
+        // Get current weights from first agent for display
+        String title;
+        if (!agents.isEmpty()) {
+            Agent firstAgent = agents.get(0);
+            title = String.format("Schwarmsimulation - Agenten: %d | %s | Sep: %.1f, Ali: %.1f, Coh: %.1f",
+                    agents.size(),
+                    paused ? "PAUSIERT" : "LÄUFT",
+                    firstAgent.getSeparationWeight(),
+                    firstAgent.getAlignmentWeight(),
+                    firstAgent.getCohesionWeight()
+            );
+        } else {
+            title = String.format("Schwarmsimulation - Agenten: %d | %s",
+                    agents.size(),
+                    paused ? "PAUSIERT" : "LÄUFT"
+            );
+        }
 
         Display.setTitle(title);
     }
@@ -230,7 +231,7 @@ public class SimulationApplication extends Window {
 
             Agent agent = new Agent(randomPos);
             agent.setWorldBounds(WIDTH, HEIGHT);
-            updateAgentWeights(agent);
+            // No need to call updateAgentWeights() - default weights are set by FishBehavior
             agents.add(agent);
         }
 
@@ -240,40 +241,61 @@ public class SimulationApplication extends Window {
     private void addAgentAtPosition(int x, int y) {
         Agent newAgent = new Agent(new Vector2D(x, y));
         newAgent.setWorldBounds(WIDTH, HEIGHT);
-        updateAgentWeights(newAgent);
-        agents.add(newAgent);
 
+        // Synchronize weights with existing agents (if any)
+        if (!agents.isEmpty()) {
+            Agent referenceAgent = agents.get(0);
+            newAgent.setSeparationWeight(referenceAgent.getSeparationWeight());
+            newAgent.setAlignmentWeight(referenceAgent.getAlignmentWeight());
+            newAgent.setCohesionWeight(referenceAgent.getCohesionWeight());
+        }
+
+        agents.add(newAgent);
         System.out.println("Agent hinzugefügt at (" + x + ", " + y + ")");
     }
 
     private void changeSeparationWeight(double delta) {
-        separationWeight = Math.max(0, separationWeight + delta);
-        updateAllAgentWeights();
-        System.out.printf("Separation Weight: %.1f\n", separationWeight);
+        // Get current weight from the first agent (assuming all agents have same weights)
+        if (!agents.isEmpty()) {
+            Agent firstAgent = agents.get(0);
+            double currentWeight = firstAgent.getSeparationWeight();
+            double newWeight = Math.max(0, currentWeight + delta);
+
+            // Update all agents
+            updateAllAgentWeights(agent -> agent.setSeparationWeight(newWeight));
+            System.out.printf("Separation Weight: %.1f\n", newWeight);
+        }
+
     }
 
     private void changeAlignmentWeight(double delta) {
-        alignmentWeight = Math.max(0, alignmentWeight + delta);
-        updateAllAgentWeights();
-        System.out.printf("Alignment Weight: %.1f\n", alignmentWeight);
+        if (!agents.isEmpty()) {
+            Agent firstAgent = agents.get(0);
+            double currentWeight = firstAgent.getAlignmentWeight();
+            double newWeight = Math.max(0, currentWeight + delta);
+
+            updateAllAgentWeights(agent -> agent.setAlignmentWeight(newWeight));
+            System.out.printf("Alignment Weight: %.1f\n", newWeight);
+        }
+
     }
 
     private void changeCohesionWeight(double delta) {
-        cohesionWeight = Math.max(0, cohesionWeight + delta);
-        updateAllAgentWeights();
-        System.out.printf("Cohesion Weight: %.1f\n", cohesionWeight);
-    }
+        if (!agents.isEmpty()) {
+            Agent firstAgent = agents.get(0);
+            double currentWeight = firstAgent.getCohesionWeight();
+            double newWeight = Math.max(0, currentWeight + delta);
 
-    private void updateAllAgentWeights() {
-        for (Agent agent : agents) {
-            updateAgentWeights(agent);
+            updateAllAgentWeights(agent -> agent.setCohesionWeight(newWeight));
+            System.out.printf("Cohesion Weight: %.1f\n", newWeight);
         }
+
     }
 
-    private void updateAgentWeights(Agent agent) {
-        agent.setSeparationWeight(separationWeight);
-        agent.setAlignmentWeight(alignmentWeight);
-        agent.setCohesionWeight(cohesionWeight);
+    private void updateAllAgentWeights(java.util.function.Consumer<Agent> weightUpdater) {
+        for (Agent agent : agents) {
+            weightUpdater.accept(agent);
+        }
     }
 
     public static void main(String[] args) {
