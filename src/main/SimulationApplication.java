@@ -15,7 +15,7 @@ import java.util.Random;
 public class SimulationApplication extends Window {
     // Simulation
     private List<Agent> agents;
-    private int agentCount = 50;
+    private int agentCount = 3;
     private Random random = new Random();
 
     // Timing
@@ -52,6 +52,7 @@ public class SimulationApplication extends Window {
             Agent agent = new Agent(randomPos);
             agent.setWorldBounds(WIDTH, HEIGHT);
             agents.add(agent);
+            System.out.println("Position des Agenten: " + agent.position);
         }
 
         lastTime = System.nanoTime() / 1e9;

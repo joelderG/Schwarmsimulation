@@ -5,48 +5,54 @@ import engine.math.Vector2D;
 import engine.math.linearAlgebra;
 import engine.objects.renderable.baseObject;
 import engine.rendering.PrimitiveRenderer;
+import simulation.behaviors.FishBehavior;
 
 import java.util.List;
 import java.util.Random;
 
 public class Agent extends baseObject {
+    // Physics properties
     public Vector2D acceleration;
     public Vector2D lastAcceleration;
     public Vector2D velocity;
-
     public Vector2D heading;
     public Vector2D side;
 
+    // Physical constants
     public double MASS = 1.0;
     public double MAX_SPEED = 50.0;
     public double MAX_FORCE = 100.0;
     public double MAX_TURN_RATE = Math.toRadians(180);
 
-    public double SWARM_DISTANCE = 50.0;
-    public double SEPARATION_DISTANCE = 25.0;
-    public double ALIGNMENT_DISTANCE = 40.0;
-    public double COHESION_DISTANCE = 60.0;
-
-    public double SEPARATION_WEIGHT = 2.0;
-    public double ALIGNMENT_WEIGHT = 1.0;
-    public double COHESION_WEIGHT = 1.0;
-
+    // World and rendering properties
     public int WIDTH = 1280, HEIGHT = 720;
-    public float radius = 3.0f;
+    public float radius = 40.0f;
 
+    // Behavior system
+    private FishBehavior fishBehavior;
+
+    // Perception range for finding neighbors
+    public double SWARM_DISTANCE = 90.0;
+
+    // Path tracking
     private dynamic2DPath path;
     private static Random random = new Random();
 
     public Agent(Vector2D randomPos) {
-        super();
+        super(randomPos);
         initialize();
     }
 
     private void initialize() {
-        acceleration = new Vector2D(0,0);
-        lastAcceleration = new Vector2D(0,0);
+        // Initialize physics
+        acceleration = new Vector2D(0, 0);
+        lastAcceleration = new Vector2D(0, 0);
         velocity = new Vector2D(random.nextGaussian() * 20, random.nextGaussian() * 20);
 
+        // Initialize behavior system with fish-specific parameters
+        fishBehavior = new FishBehavior(MAX_FORCE);
+
+        // Set initial heading based on velocity
         if (!velocity.isNullvector()) {
             heading = new Vector2D(velocity);
             heading.normalize();
@@ -59,147 +65,40 @@ public class Agent extends baseObject {
     }
 
     public void update(double deltaTime, List<Agent> neighbors) {
-        Vector2D steeringForce = calculateSteeringForce(neighbors);
+        // Calculate steering force using behavior system
+        Vector2D steeringForce = fishBehavior.calculateSteeringForce(this, neighbors);
 
+        // Apply physics
         lastAcceleration = new Vector2D(acceleration);
         acceleration = linearAlgebra.div(steeringForce, MASS);
 
+        // Update velocity
         Vector2D deltaVel = linearAlgebra.mult(acceleration, deltaTime);
         velocity.add(deltaVel);
 
+        // Limit speed
         if (velocity.length() > MAX_SPEED) {
             velocity.normalize();
             velocity.mult(MAX_SPEED);
         }
 
+        // Update position
         Vector2D deltaPos = linearAlgebra.mult(velocity, deltaTime);
         position.add(deltaPos);
 
+        // Update heading and side vectors
         if (!velocity.isNullvector()) {
             heading = linearAlgebra.normalize(velocity);
             side = linearAlgebra.vertical(heading);
         }
 
+        // Handle world boundaries
         wrapAroundWorld();
 
+        // Record path
         path.addWaypoint(new Vector2D(position));
     }
 
-    private Vector2D calculateSteeringForce(List<Agent> neighbors) {
-        Vector2D separation = calculateSeparation(neighbors);
-        Vector2D alignment = calculateAlignment(neighbors);
-        Vector2D cohesion = calculateCohesion(neighbors);
-
-        separation.mult(SEPARATION_WEIGHT);
-        alignment.mult(ALIGNMENT_WEIGHT);
-        cohesion.mult(COHESION_WEIGHT);
-
-        Vector2D totalForce = new Vector2D();
-        totalForce.add(separation);
-        totalForce.add(alignment);
-        totalForce.add(cohesion);
-
-        if (totalForce.length() > MAX_FORCE) {
-            totalForce.normalize();
-            totalForce.mult(MAX_FORCE);
-        }
-
-        return totalForce;
-    }
-
-    private Vector2D calculateSeparation(List<Agent> neighbors) {
-        Vector2D steer = new Vector2D();
-        int count = 0;
-
-        for (Agent other : neighbors) {
-            double distance = linearAlgebra.euclideanDistance(position, other.position);
-
-            if (distance > 0 && distance < SEPARATION_DISTANCE) {
-                Vector2D diff = linearAlgebra.sub(position, other.position);
-                diff.normalize();
-                diff.div(distance); // Je näher, desto stärker
-                steer.add(diff);
-                count++;
-            }
-        }
-
-        if (count > 0) {
-            steer.div(count);
-            steer.normalize();
-            steer.mult(MAX_SPEED);
-            steer.sub(velocity);
-        }
-
-        return steer;
-    }
-
-    /**
-     * Alignment: Geschwindigkeit an Nachbarn anpassen
-     */
-    private Vector2D calculateAlignment(List<Agent> neighbors) {
-        Vector2D averageVel = new Vector2D();
-        int count = 0;
-
-        for (Agent other : neighbors) {
-            double distance = linearAlgebra.euclideanDistance(position, other.position);
-
-            if (distance > 0 && distance < ALIGNMENT_DISTANCE) {
-                averageVel.add(other.velocity);
-                count++;
-            }
-        }
-
-        if (count > 0) {
-            averageVel.div(count);
-            averageVel.normalize();
-            averageVel.mult(MAX_SPEED);
-
-            Vector2D steer = linearAlgebra.sub(averageVel, velocity);
-            return steer;
-        }
-
-        return new Vector2D();
-    }
-
-    /**
-     * Cohesion: Zu Zentrum der Nachbargruppe bewegen
-     */
-    private Vector2D calculateCohesion(List<Agent> neighbors) {
-        Vector2D centerOfMass = new Vector2D();
-        int count = 0;
-
-        for (Agent other : neighbors) {
-            double distance = linearAlgebra.euclideanDistance(position, other.position);
-
-            if (distance > 0 && distance < COHESION_DISTANCE) {
-                centerOfMass.add(other.position);
-                count++;
-            }
-        }
-
-        if (count > 0) {
-            centerOfMass.div(count);
-            return seek(centerOfMass);
-        }
-
-        return new Vector2D();
-    }
-
-    /**
-     * Seek-Verhalten: Zu einem Ziel bewegen
-     */
-    private Vector2D seek(Vector2D target) {
-        Vector2D desired = linearAlgebra.sub(target, position);
-        desired.normalize();
-        desired.mult(MAX_SPEED);
-
-        Vector2D steer = linearAlgebra.sub(desired, velocity);
-        return steer;
-    }
-
-    /**
-     * Welt-Grenzen: Wrapping um Bildschirmränder
-     */
     private void wrapAroundWorld() {
         if (position.x < 0) position.x = WIDTH;
         if (position.x > WIDTH) position.x = 0;
@@ -207,18 +106,15 @@ public class Agent extends baseObject {
         if (position.y > HEIGHT) position.y = 0;
     }
 
-    /**
-     * Rendering des Agents
-     */
     @Override
     public void render() {
         Renderer.pushMatrix();
 
-        // Agent als Kreis mit Kraftvektoren rendern
+        // Render agent as circle with force vectors
         PrimitiveRenderer.renderCircleWithForces(
-                (float)position.x,
-                (float)position.y,
-                (int)radius,
+                (float) position.x,
+                (float) position.y,
+                (int) radius,
                 velocity,
                 acceleration
         );
@@ -226,9 +122,6 @@ public class Agent extends baseObject {
         Renderer.popMatrix();
     }
 
-    /**
-     * Pfad rendern (optional)
-     */
     public void renderPath() {
         if (path.getSize() < 2) return;
 
@@ -240,25 +133,85 @@ public class Agent extends baseObject {
             Vector2D p2 = pathPoints[i + 1];
 
             PrimitiveRenderer.renderLine2D(
-                    (float)p1.x, (float)p1.y,
-                    (float)p2.x, (float)p2.y
+                    (float) p1.x, (float) p1.y,
+                    (float) p2.x, (float) p2.y
             );
         }
 
         Renderer.resetColor();
     }
 
-    // Getter/Setter für Parameter-Anpassung
     public void setWorldBounds(int width, int height) {
         this.WIDTH = width;
         this.HEIGHT = height;
     }
 
-    public void setSeparationWeight(double weight) { this.SEPARATION_WEIGHT = weight; }
-    public void setAlignmentWeight(double weight) { this.ALIGNMENT_WEIGHT = weight; }
-    public void setCohesionWeight(double weight) { this.COHESION_WEIGHT = weight; }
+    public void setSwarmDistance(double distance) {
+        this.SWARM_DISTANCE = distance;
+    }
 
-    public double getSeparationWeight() { return SEPARATION_WEIGHT; }
-    public double getAlignmentWeight() { return ALIGNMENT_WEIGHT; }
-    public double getCohesionWeight() { return COHESION_WEIGHT; }
+    public void setSeparationWeight(double weight) {
+        fishBehavior.setSeparationWeight(weight);
+    }
+
+    public void setAlignmentWeight(double weight) {
+        fishBehavior.setAlignmentWeight(weight);
+    }
+
+    public void setCohesionWeight(double weight) {
+        fishBehavior.setCohesionWeight(weight);
+    }
+
+    public double getSeparationWeight() {
+        return fishBehavior.getSeparationWeight();
+    }
+
+    public double getAlignmentWeight() {
+        return fishBehavior.getAlignmentWeight();
+    }
+
+    public double getCohesionWeight() {
+        return fishBehavior.getCohesionWeight();
+    }
+
+    public void setSeparationDistance(double distance) {
+        fishBehavior.setSeparationDistance(distance);
+    }
+
+    public void setAlignmentDistance(double distance) {
+        fishBehavior.setAlignmentDistance(distance);
+    }
+
+    public void setCohesionDistance(double distance) {
+        fishBehavior.setCohesionDistance(distance);
+    }
+
+    public FishBehavior getBehaviorSystem() {
+        return fishBehavior;
+    }
+
+    public void setBehaviorSystem(FishBehavior newBehavior) {
+        this.fishBehavior = newBehavior;
+    }
+
+    public double getCurrentSpeed() {
+        return velocity.length();
+    }
+
+    public double getDistanceTo(Agent other) {
+        return linearAlgebra.euclideanDistance(this.position, other.position);
+    }
+
+    public boolean canSee(Agent other) {
+        return getDistanceTo(other) <= SWARM_DISTANCE;
+    }
+
+    public void clearPath() {
+        path = new dynamic2DPath(50);
+    }
+
+    public int getPathSize() {
+        return path.getSize();
+    }
 }
+
