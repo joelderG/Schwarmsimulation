@@ -1,4 +1,4 @@
-package graphics.math;
+package engine.math;
 
 public class linearAlgebra {
     private linearAlgebra() {};
