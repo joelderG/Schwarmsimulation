@@ -240,7 +240,7 @@ public class PrimitiveRenderer {
             angle = 180 + (180-angle);
 
         glColor4f(0.35f, 0.63f, 0.73f, 1.0f);
-        renderArrow(x, y, off, (float)angle, 15);
+        //renderArrow(x, y, off, (float)angle, 15);
 
         // Acceleration
         off = radius + 1 + (int)(acceleration.length()/10);
@@ -249,6 +249,6 @@ public class PrimitiveRenderer {
             angle = 180 + (180-angle);
 
         glColor4f(1, 0, 0, 1);
-        renderArrow(x, y, off, (float)angle, 15);
+        //renderArrow(x, y, off, (float)angle, 15);
     }
 }

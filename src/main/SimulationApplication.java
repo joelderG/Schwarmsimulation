@@ -7,6 +7,7 @@ import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
 import simulation.agents.Agent;
+import simulation.obstacles.Obstacle;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,7 +16,7 @@ import java.util.Random;
 public class SimulationApplication extends Window {
     // Simulation
     private List<Agent> agents;
-    private int agentCount = 3;
+    private int agentCount = 50;
     private Random random = new Random();
 
     // Timing
@@ -25,6 +26,9 @@ public class SimulationApplication extends Window {
     // Simulation State
     private boolean paused = false;
     private boolean showPaths = false;
+
+    private List<Obstacle> obstacles;
+    private double obstacleRadius = 30.0;
 
     public SimulationApplication(String title, int w, int h) {
         super(title, w, h);
@@ -36,6 +40,8 @@ public class SimulationApplication extends Window {
         // Renderer für 2D setup
         Renderer.init2D(WIDTH, HEIGHT);
 
+        obstacles = new ArrayList<>();
+
         // Agenten erstellen
         agents = new ArrayList<>();
         for (int i = 0; i < agentCount; i++) {
@@ -46,6 +52,9 @@ public class SimulationApplication extends Window {
 
             Agent agent = new Agent(randomPos);
             agent.setWorldBounds(WIDTH, HEIGHT);
+
+            agent.getBehaviorSystem().addObstacleAvoidance(obstacles);
+
             agents.add(agent);
             System.out.println("Position des Agenten: " + agent.position);
         }
@@ -56,11 +65,17 @@ public class SimulationApplication extends Window {
         System.out.println("Agenten: " + agentCount);
         System.out.println("Steuerung:");
         System.out.println("  SPACE - Pause/Resume");
+        System.out.println("  Right Click - Add Obstacle");
+        System.out.println("  C - Clear Obstacles");
+        System.out.println("  +/- - Obstacle Size +/-");
         System.out.println("  P - Pfade ein/aus");
         System.out.println("  R - Reset");
         System.out.println("  1/2 - Separation +/-");
         System.out.println("  3/4 - Alignment +/-");
         System.out.println("  5/6 - Cohesion +/-");
+        System.out.println("  7/8 - Swimming Weight +/-");
+        System.out.println("  9/0 - Swimming Amplitude +/-");
+
         System.out.println("  ESC - Beenden");
     }
 
@@ -107,6 +122,21 @@ public class SimulationApplication extends Window {
                         resetSimulation();
                         break;
 
+                    case Keyboard.KEY_C:
+                        clearObstacles();
+                        break;
+
+                    case Keyboard.KEY_EQUALS: // + key
+                    case Keyboard.KEY_ADD:
+                        changeObstacleRadius(5.0);
+                        break;
+
+                    case Keyboard.KEY_MINUS:
+                    case Keyboard.KEY_SUBTRACT:
+                        changeObstacleRadius(-5.0);
+                        break;
+
+
                     case Keyboard.KEY_1:
                         changeSeparationWeight(0.1);
                         break;
@@ -128,6 +158,20 @@ public class SimulationApplication extends Window {
                         changeCohesionWeight(-0.1);
                         break;
 
+                    case Keyboard.KEY_7:
+                        changeSwimmingWeight(0.1);
+                        break;
+                    case Keyboard.KEY_8:
+                        changeSwimmingWeight(-0.1);
+                        break;
+
+                    case Keyboard.KEY_9:
+                        changeSwimmingAmplitude(0.5);
+                        break;
+                    case Keyboard.KEY_0:
+                        changeSwimmingAmplitude(-0.5);
+                        break;
+
                     case Keyboard.KEY_ESCAPE:
                         Display.destroy();
                         System.exit(0);
@@ -144,6 +188,8 @@ public class SimulationApplication extends Window {
 
                 if (Mouse.getEventButton() == 0) { // Linke Maustaste
                     addAgentAtPosition(mouseX, mouseY);
+                } else if (Mouse.getEventButton() == 1) {
+                    addObstacleAtPosition(mouseX, mouseY);
                 }
             }
         }
@@ -182,6 +228,10 @@ public class SimulationApplication extends Window {
     private void render() {
         // Hintergrund löschen
         Renderer.clearBuffers();
+
+        for (Obstacle obstacle : obstacles) {
+            obstacle.render();
+        }
 
         // Alle Agenten rendern
         for (Agent agent : agents) {
@@ -250,6 +300,8 @@ public class SimulationApplication extends Window {
             newAgent.setCohesionWeight(referenceAgent.getCohesionWeight());
         }
 
+        newAgent.getBehaviorSystem().addObstacleAvoidance(obstacles);
+
         agents.add(newAgent);
         System.out.println("Agent hinzugefügt at (" + x + ", " + y + ")");
     }
@@ -297,6 +349,59 @@ public class SimulationApplication extends Window {
             weightUpdater.accept(agent);
         }
     }
+
+    private void changeSwimmingWeight(double delta) {
+        if (!agents.isEmpty()) {
+            Agent firstAgent = agents.get(0);
+            double currentWeight = firstAgent.getSwimmingWeight();
+            double newWeight = Math.max(0, currentWeight + delta);
+
+            updateAllAgentWeights(agent -> agent.setSwimmingWeight(newWeight));
+            System.out.printf("Swimming Weight: %.1f\n", newWeight);
+        }
+    }
+
+    private void changeSwimmingAmplitude(double delta) {
+        if (!agents.isEmpty()) {
+            Agent firstAgent = agents.get(0);
+            double currentAmplitude = firstAgent.getSwimmingAmplitude();
+            double newAmplitude = Math.max(0, currentAmplitude + delta);
+
+            for (Agent agent : agents) {
+                agent.setSwimmingAmplitude(newAmplitude);
+            }
+            System.out.printf("Swimming Amplitude: %.1f\n", newAmplitude);
+        }
+    }
+
+    private void addObstacleAtPosition(int x, int y) {
+        Obstacle newObstacle = new Obstacle(new Vector2D(x, y), obstacleRadius);
+        obstacles.add(newObstacle);
+
+        // Update all agents with new obstacle list
+        for (Agent agent : agents) {
+            agent.updateObstacles(obstacles);
+        }
+
+        System.out.println("Obstacle added at (" + x + ", " + y + ") with radius " + obstacleRadius);
+    }
+
+    private void clearObstacles() {
+        obstacles.clear();
+
+        // Update all agents
+        for (Agent agent : agents) {
+            agent.updateObstacles(obstacles);
+        }
+
+        System.out.println("All obstacles cleared");
+    }
+
+    private void changeObstacleRadius(double delta) {
+        obstacleRadius = Math.max(10.0, obstacleRadius + delta);
+        System.out.printf("Obstacle Radius: %.1f\n", obstacleRadius);
+    }
+
 
     public static void main(String[] args) {
         try {

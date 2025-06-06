@@ -6,6 +6,7 @@ import engine.math.linearAlgebra;
 import engine.objects.renderable.baseObject;
 import engine.rendering.PrimitiveRenderer;
 import simulation.behaviors.FishBehavior;
+import simulation.obstacles.Obstacle;
 
 import java.util.List;
 import java.util.Random;
@@ -184,6 +185,42 @@ public class Agent extends baseObject {
 
     public void setCohesionDistance(double distance) {
         fishBehavior.setCohesionDistance(distance);
+    }
+
+    public void setSwimmingWeight(double weight) {
+        fishBehavior.setSwimmingWeight(weight);
+    }
+
+    public double getSwimmingWeight() {
+        return fishBehavior.getSwimmingWeight();
+    }
+
+    public void setSwimmingAmplitude(double amplitude) {
+        fishBehavior.setSwimmingAmplitude(amplitude);
+    }
+
+    public void setSwimmingFrequency(double frequency) {
+        fishBehavior.setSwimmingFrequency(frequency);
+    }
+
+    public double getSwimmingAmplitude() {
+        return fishBehavior.getSwimmingAmplitude();
+    }
+
+    public double getSwimmingFrequency() {
+        return fishBehavior.getSwimmingFrequency();
+    }
+
+    public void updateObstacles(List<Obstacle> obstacles) {
+        fishBehavior.updateObstacles(obstacles);
+    }
+
+    public void setObstacleAvoidanceWeight(double weight) {
+        fishBehavior.setObstacleAvoidanceWeight(weight);
+    }
+
+    public double getObstacleAvoidanceWeight() {
+        return fishBehavior.getObstacleAvoidanceWeight();
     }
 
     public FishBehavior getBehaviorSystem() {

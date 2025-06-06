@@ -2,6 +2,7 @@ package simulation.behaviors;
 
 import engine.math.Vector2D;
 import simulation.agents.Agent;
+import simulation.obstacles.Obstacle;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,6 +23,7 @@ public class FishBehavior {
         behaviors.add(new SeparationBehavior(3.5, 18.0));
         behaviors.add(new AlignmentBehavior(1.75, 35.0));
         behaviors.add(new CohesionBehavior(1.0, 60.0));
+        behaviors.add(new SwimmingBehavior(0.8, 5.0, 6.0));
     }
 
     public Vector2D calculateSteeringForce(Agent agent, List<Agent> neighbors) {
@@ -89,6 +91,64 @@ public class FishBehavior {
     public double getCohesionDistance() {
         return getBehavior(CohesionBehavior.class).getInfluenceDistance();
     }
+
+
+    public void setSwimmingWeight(double weight) {
+        getBehavior(SwimmingBehavior.class).setWeight(weight);
+    }
+
+    public double getSwimmingWeight() {
+        return getBehavior(SwimmingBehavior.class).getWeight();
+    }
+
+    public void setSwimmingAmplitude(double amplitude) {
+        ((SwimmingBehavior) getBehavior(SwimmingBehavior.class)).setAmplitude(amplitude);
+    }
+
+    public double getSwimmingAmplitude() {
+        return ((SwimmingBehavior) getBehavior(SwimmingBehavior.class)).getAmplitude();
+    }
+
+    public void setSwimmingFrequency(double frequency) {
+        ((SwimmingBehavior) getBehavior(SwimmingBehavior.class)).setFrequency(frequency);
+    }
+
+    public double getSwimmingFrequency() {
+        return ((SwimmingBehavior) getBehavior(SwimmingBehavior.class)).getFrequency();
+    }
+
+    public void addObstacleAvoidance(List<Obstacle> obstacles) {
+        behaviors.removeIf(b -> b instanceof ObstacleAvoidanceBehavior);
+        behaviors.add(new ObstacleAvoidanceBehavior(5.0, obstacles));
+    }
+
+    public void setObstacleAvoidanceWeight(double weight) {
+        for (Behavior behavior : behaviors) {
+            if (behavior instanceof ObstacleAvoidanceBehavior) {
+                behavior.setWeight(weight);
+                break;
+            }
+        }
+    }
+
+    public double getObstacleAvoidanceWeight() {
+        for (Behavior behavior : behaviors) {
+            if (behavior instanceof ObstacleAvoidanceBehavior) {
+                return behavior.getWeight();
+            }
+        }
+        return 0.0;
+    }
+
+    public void updateObstacles(List<Obstacle> obstacles) {
+        for (Behavior behavior : behaviors) {
+            if (behavior instanceof ObstacleAvoidanceBehavior) {
+                ((ObstacleAvoidanceBehavior) behavior).setObstacles(obstacles);
+                break;
+            }
+        }
+    }
+
 
     @SuppressWarnings("unchecked")
     private <T extends Behavior> T getBehavior(Class<T> behaviorClass) {
