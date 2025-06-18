@@ -1,9 +1,6 @@
 package simulation.agents;
 
-import java.util.List;
 import engine.math.Vector2D;
-import simulation.config.SimulationConstants;
-import simulation.obstacles.Obstacle;
 
 public class AgentBuilder {
     private Vector2D position = new Vector2D();
@@ -14,7 +11,7 @@ public class AgentBuilder {
     private double swarmDistance = SimulationConstants.DEFAULT_SWARM_DISTANCE;
     private int worldWidth = SimulationConstants.DEFAULT_WINDOW_WIDTH;
     private int worldHeight = SimulationConstants.DEFAULT_WINDOW_HEIGHT;
-    private List<Obstacle> obstacles;
+    private MosquitoType mosquitoType = null; // null means random selection
 
     public AgentBuilder position(Vector2D position) {
         this.position = position;
@@ -52,13 +49,20 @@ public class AgentBuilder {
         return this;
     }
 
-    public AgentBuilder obstacles(List<Obstacle> obstacles) {
-        this.obstacles = obstacles;
+    public AgentBuilder mosquitoType(MosquitoType type) {
+        this.mosquitoType = type;
         return this;
     }
 
     public Agent build() {
-        Agent agent = new Agent(position);
+        Agent agent;
+
+        if (mosquitoType != null) {
+            agent = new Agent(position, mosquitoType);
+        } else {
+            agent = new Agent(position); // Random type selection
+        }
+
         agent.setWorldBounds(worldWidth, worldHeight);
         agent.setSwarmDistance(swarmDistance);
 
@@ -66,10 +70,6 @@ public class AgentBuilder {
         agent.MAX_SPEED = maxSpeed;
         agent.MAX_FORCE = maxForce;
         agent.radius = (float) radius;
-
-        if (obstacles != null) {
-            agent.getBehaviorSystem().addObstacleAvoidance(obstacles);
-        }
 
         return agent;
     }

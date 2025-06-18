@@ -251,4 +251,111 @@ public class PrimitiveRenderer {
         glColor4f(1, 0, 0, 1);
         //renderArrow(x, y, off, (float)angle, 15);
     }
+
+    public static void renderMosquito(float x, float y, float size, float rotation) {
+        glPushMatrix();
+
+        // Transform to mosquito position and rotation
+        glTranslatef(x, y, 0);
+        glRotatef(rotation, 0, 0, 1);
+
+        float bodyLength = size * 1.2f;
+        float bodyWidth = size * 0.3f;
+        float wingLength = size * 0.8f;
+        float wingWidth = size * 0.4f;
+
+        // === WINGS (behind body) ===
+        // Left wing
+        glBegin(GL_TRIANGLE_FAN);
+        glVertex2f(-bodyLength * 0.1f, bodyWidth * 0.5f); // Wing attachment point
+        glVertex2f(-wingLength * 0.3f, wingWidth + bodyWidth * 0.5f);
+        glVertex2f(-wingLength * 0.8f, wingWidth * 0.8f + bodyWidth * 0.5f);
+        glVertex2f(-wingLength * 0.9f, bodyWidth * 0.2f);
+        glVertex2f(-wingLength * 0.6f, bodyWidth * 0.3f);
+        glEnd();
+
+        // Right wing
+        glBegin(GL_TRIANGLE_FAN);
+        glVertex2f(-bodyLength * 0.1f, -bodyWidth * 0.5f); // Wing attachment point
+        glVertex2f(-wingLength * 0.3f, -wingWidth - bodyWidth * 0.5f);
+        glVertex2f(-wingLength * 0.8f, -wingWidth * 0.8f - bodyWidth * 0.5f);
+        glVertex2f(-wingLength * 0.9f, -bodyWidth * 0.2f);
+        glVertex2f(-wingLength * 0.6f, -bodyWidth * 0.3f);
+        glEnd();
+
+        // === LEGS ===
+        glBegin(GL_LINES);
+        // Front legs
+        glVertex2f(bodyLength * 0.2f, bodyWidth * 0.5f);
+        glVertex2f(bodyLength * 0.1f, bodyWidth * 1.2f);
+        glVertex2f(bodyLength * 0.2f, -bodyWidth * 0.5f);
+        glVertex2f(bodyLength * 0.1f, -bodyWidth * 1.2f);
+
+        // Middle legs
+        glVertex2f(-bodyLength * 0.1f, bodyWidth * 0.5f);
+        glVertex2f(-bodyLength * 0.2f, bodyWidth * 1.3f);
+        glVertex2f(-bodyLength * 0.1f, -bodyWidth * 0.5f);
+        glVertex2f(-bodyLength * 0.2f, -bodyWidth * 1.3f);
+
+        // Back legs
+        glVertex2f(-bodyLength * 0.4f, bodyWidth * 0.5f);
+        glVertex2f(-bodyLength * 0.5f, bodyWidth * 1.1f);
+        glVertex2f(-bodyLength * 0.4f, -bodyWidth * 0.5f);
+        glVertex2f(-bodyLength * 0.5f, -bodyWidth * 1.1f);
+        glEnd();
+
+        // === BODY ===
+        // Main body (abdomen)
+        glBegin(GL_TRIANGLE_FAN);
+        glVertex2f(-bodyLength * 0.2f, 0); // Center
+        int segments = 8;
+        for (int i = 0; i <= segments; i++) {
+            float angle = (float)(Math.PI * 2 * i / segments);
+            float bodyX = -bodyLength * 0.2f + (float)Math.cos(angle) * bodyLength * 0.5f;
+            float bodyY = (float)Math.sin(angle) * bodyWidth * 0.5f;
+            glVertex2f(bodyX, bodyY);
+        }
+        glEnd();
+
+        // Thorax (middle section)
+        glBegin(GL_TRIANGLE_FAN);
+        glVertex2f(bodyLength * 0.1f, 0);
+        for (int i = 0; i <= segments; i++) {
+            float angle = (float)(Math.PI * 2 * i / segments);
+            float thoraxX = bodyLength * 0.1f + (float)Math.cos(angle) * bodyLength * 0.3f;
+            float thoraxY = (float)Math.sin(angle) * bodyWidth * 0.4f;
+            glVertex2f(thoraxX, thoraxY);
+        }
+        glEnd();
+
+        // === HEAD ===
+        // Head circle
+        renderCircle(bodyLength * 0.45f, 0, bodyWidth * 0.6f, 6);
+
+        // === PROBOSCIS (mosquito "needle") ===
+        glBegin(GL_LINES);
+        glVertex2f(bodyLength * 0.45f, 0);
+        glVertex2f(bodyLength * 0.8f, 0);
+        glEnd();
+
+        // === ANTENNAE ===
+        glBegin(GL_LINES);
+        // Left antenna
+        glVertex2f(bodyLength * 0.45f, bodyWidth * 0.2f);
+        glVertex2f(bodyLength * 0.6f, bodyWidth * 0.4f);
+        // Right antenna
+        glVertex2f(bodyLength * 0.45f, -bodyWidth * 0.2f);
+        glVertex2f(bodyLength * 0.6f, -bodyWidth * 0.4f);
+        glEnd();
+
+        glPopMatrix();
+    }
+
+    public static void renderMosquito(float x, float y, float size, float velocityX, float velocityY) {
+        float rotation = 0;
+        if (velocityX != 0 || velocityY != 0) {
+            rotation = (float)(Math.atan2(velocityY, velocityX) * 180.0 / Math.PI);
+        }
+        renderMosquito(x, y, size, rotation);
+    }
 }
