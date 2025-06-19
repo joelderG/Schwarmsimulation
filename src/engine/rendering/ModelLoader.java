@@ -38,7 +38,6 @@ public class ModelLoader {
                 lineNumber++;
                 line = line.trim();
 
-                // Skip empty lines and comments
                 if (line.isEmpty() || line.startsWith("#")) {
                     continue;
                 }
@@ -53,7 +52,6 @@ public class ModelLoader {
                     } else if (line.startsWith("f ")) {
                         parseFace(line, model);
                     }
-                    // Ignore other OBJ elements (materials, groups, etc.)
                 } catch (Exception e) {
                     throw new ModelLoadException(
                             String.format("Error parsing line %d in file %s: %s",
@@ -122,14 +120,12 @@ public class ModelLoader {
             throw new ModelLoadException("Face must have at least 3 vertices: " + line);
         }
 
-        // Convert polygons to triangles (fan triangulation)
         List<FaceVertex> vertices = new ArrayList<>();
 
         for (int i = 1; i < parts.length; i++) {
             vertices.add(parseFaceVertex(parts[i], model));
         }
 
-        // Triangulate the face (simple fan triangulation)
         for (int i = 1; i < vertices.size() - 1; i++) {
             FaceVertex v1 = vertices.get(0);
             FaceVertex v2 = vertices.get(i);

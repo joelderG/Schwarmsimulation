@@ -2,10 +2,6 @@ package engine.objects.renderable;
 
 import engine.math.Vector2D;
 
-// improvements
-// TODO: consider adding more common attributes like: color, rotation (angle), scale
-// TODO: id field is present but not utilized, remove it when no need to identify objects
-
 public abstract class baseObject {
     public int id;
     public Vector2D position;

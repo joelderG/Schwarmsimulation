@@ -24,7 +24,7 @@ public class RenderingExample extends Window {
 
     public void renderLoop() {
         // modelloader for 3D
-        loadModel("assets/models/LowPolyFish.obj");
+        loadModel("assets/models/LowPolyMosquito.obj");
 
         // initial setup for 2D
         // setup2Dview();

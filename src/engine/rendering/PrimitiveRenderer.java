@@ -11,10 +11,10 @@ public class PrimitiveRenderer {
     private PrimitiveRenderer() {}
 
     public static void renderCircle(float x, float y, float radius, int segments) {
-        if (segments < 3) segments = 3; // Minimum segments for a circle
+        if (segments < 3) segments = 3;
 
         glBegin(GL_TRIANGLE_FAN);
-        glVertex2f(x, y); // Center point
+        glVertex2f(x, y);
 
         float angleStep = (float)(2 * Math.PI / segments);
         for(int i = 0; i <= segments; i++) {
@@ -71,7 +71,7 @@ public class PrimitiveRenderer {
         float angleStep = (float)(Math.PI / points);
 
         glBegin(GL_TRIANGLE_FAN);
-        glVertex2f(x, y); // Center point
+        glVertex2f(x, y);
 
         for (int i = 0; i <= points * 2; i++) {
             float angle = i * angleStep;
@@ -227,28 +227,106 @@ public class PrimitiveRenderer {
         glColor4f(0.05f, 0.39f, 0.51f, 1.0f);
         renderCircle(0, 0, 5, radius);
         glColor4f(0.66f, 0.87f, 0.95f, 1.0f);
-        // TODO: radius-2 hardcoded
         renderCircle(0, 0, 5, radius-2);
 
-        // velocity
-        // TODO: velocity.length()/5 hardcoded
         int off = radius + 1 + (int)(velocity.length()/5);
         double angle = linearAlgebra.angleDegree(velocity, new Vector2D(1,0));
 
-        // angle correction
         if (velocity.y<0)
             angle = 180 + (180-angle);
 
         glColor4f(0.35f, 0.63f, 0.73f, 1.0f);
-        //renderArrow(x, y, off, (float)angle, 15);
 
-        // Acceleration
         off = radius + 1 + (int)(acceleration.length()/10);
         angle = linearAlgebra.angleDegree(acceleration, new Vector2D(1,0));
         if (acceleration.y<0)
             angle = 180 + (180-angle);
 
         glColor4f(1, 0, 0, 1);
-        //renderArrow(x, y, off, (float)angle, 15);
+    }
+
+    public static void renderMosquito(float x, float y, float size, float rotation) {
+        glPushMatrix();
+
+        glTranslatef(x, y, 0);
+        glRotatef(rotation, 0, 0, 1);
+
+        float bodyLength = size * 1.2f;
+        float bodyWidth = size * 0.3f;
+        float wingLength = size * 0.8f;
+        float wingWidth = size * 0.4f;
+
+        glBegin(GL_TRIANGLE_FAN);
+        glVertex2f(-bodyLength * 0.1f, bodyWidth * 0.5f); // Wing attachment point
+        glVertex2f(-wingLength * 0.3f, wingWidth + bodyWidth * 0.5f);
+        glVertex2f(-wingLength * 0.8f, wingWidth * 0.8f + bodyWidth * 0.5f);
+        glVertex2f(-wingLength * 0.9f, bodyWidth * 0.2f);
+        glVertex2f(-wingLength * 0.6f, bodyWidth * 0.3f);
+        glEnd();
+
+        glBegin(GL_TRIANGLE_FAN);
+        glVertex2f(-bodyLength * 0.1f, -bodyWidth * 0.5f); // Wing attachment point
+        glVertex2f(-wingLength * 0.3f, -wingWidth - bodyWidth * 0.5f);
+        glVertex2f(-wingLength * 0.8f, -wingWidth * 0.8f - bodyWidth * 0.5f);
+        glVertex2f(-wingLength * 0.9f, -bodyWidth * 0.2f);
+        glVertex2f(-wingLength * 0.6f, -bodyWidth * 0.3f);
+        glEnd();
+
+        glBegin(GL_LINES);
+        glVertex2f(bodyLength * 0.2f, bodyWidth * 0.5f);
+        glVertex2f(bodyLength * 0.1f, bodyWidth * 1.2f);
+        glVertex2f(bodyLength * 0.2f, -bodyWidth * 0.5f);
+        glVertex2f(bodyLength * 0.1f, -bodyWidth * 1.2f);
+
+        glVertex2f(-bodyLength * 0.1f, bodyWidth * 0.5f);
+        glVertex2f(-bodyLength * 0.2f, bodyWidth * 1.3f);
+        glVertex2f(-bodyLength * 0.1f, -bodyWidth * 0.5f);
+        glVertex2f(-bodyLength * 0.2f, -bodyWidth * 1.3f);
+
+        glVertex2f(-bodyLength * 0.4f, bodyWidth * 0.5f);
+        glVertex2f(-bodyLength * 0.5f, bodyWidth * 1.1f);
+        glVertex2f(-bodyLength * 0.4f, -bodyWidth * 0.5f);
+        glVertex2f(-bodyLength * 0.5f, -bodyWidth * 1.1f);
+        glEnd();
+
+        glBegin(GL_TRIANGLE_FAN);
+        glVertex2f(-bodyLength * 0.2f, 0); // Center
+        int segments = 8;
+        for (int i = 0; i <= segments; i++) {
+            float angle = (float)(Math.PI * 2 * i / segments);
+            float bodyX = -bodyLength * 0.2f + (float)Math.cos(angle) * bodyLength * 0.5f;
+            float bodyY = (float)Math.sin(angle) * bodyWidth * 0.5f;
+            glVertex2f(bodyX, bodyY);
+        }
+        glEnd();
+
+        glBegin(GL_TRIANGLE_FAN);
+        glVertex2f(bodyLength * 0.1f, 0);
+        for (int i = 0; i <= segments; i++) {
+            float angle = (float)(Math.PI * 2 * i / segments);
+            float thoraxX = bodyLength * 0.1f + (float)Math.cos(angle) * bodyLength * 0.3f;
+            float thoraxY = (float)Math.sin(angle) * bodyWidth * 0.4f;
+            glVertex2f(thoraxX, thoraxY);
+        }
+        glEnd();
+
+        renderCircle(bodyLength * 0.45f, 0, bodyWidth * 0.6f, 6);
+
+        glBegin(GL_LINES);
+        glVertex2f(bodyLength * 0.45f, bodyWidth * 0.2f);
+        glVertex2f(bodyLength * 0.6f, bodyWidth * 0.4f);
+        glVertex2f(bodyLength * 0.45f, -bodyWidth * 0.2f);
+        glVertex2f(bodyLength * 0.6f, -bodyWidth * 0.4f);
+        glEnd();
+
+        glPopMatrix();
+    }
+
+    public static void renderMosquito(float x, float y, float size, float velocityX, float velocityY) {
+        float rotation = 0;
+        if (velocityX != 0 || velocityY != 0) {
+            rotation = (float)(Math.atan2(velocityY, velocityX) * 180.0 / Math.PI);
+        }
+        renderMosquito(x, y, size, rotation);
     }
 }

@@ -79,14 +79,7 @@ public class Vector2D {
         return x * x + y * y;
     }
 
-    // TODO: Vergleiche Nullvektorbehandlung
     public void normalize() {
-//        if (this.isNullvector()) {
-//            setPosition(linearAlgebra.mult(this, (1.0 / this.length() + 0.00001)));
-//        } else {
-//            setPosition(linearAlgebra.div(this, this.length()));
-//        }
-
         if (this.isNullvector()) {
             throw new IllegalArgumentException("Cannot normalize a null vector.");
         }

@@ -209,37 +209,29 @@ public class Renderer {
     }
 
     public static void setup3D(int width, int height, float fov, float nearPlane, float farPlane) {
-        // Enable depth test for 3D
         glEnable(GL_DEPTH_TEST);
         glDepthFunc(GL_LEQUAL);
         glClearDepth(1.0);
 
-        // Enable backface culling for performance
         glEnable(GL_CULL_FACE);
         glCullFace(GL_BACK);
         glFrontFace(GL_CCW);
 
-        // Enable blending
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-        // Enable normalize for proper lighting
         glEnable(GL_NORMALIZE);
 
-        // Set viewport
         glViewport(0, 0, width, height);
 
-        // Set projection matrix for 3D perspective
         glMatrixMode(GL_PROJECTION);
         glLoadIdentity();
 
-        // Calculate perspective
         float aspect = (float) width / (float) height;
         float fH = (float) Math.tan(Math.toRadians(fov) / 2.0) * nearPlane;
         float fW = fH * aspect;
         glFrustum(-fW, fW, -fH, fH, nearPlane, farPlane);
 
-        // Set modelview matrix
         glMatrixMode(GL_MODELVIEW);
         glLoadIdentity();
     }
@@ -248,7 +240,6 @@ public class Renderer {
         init();
         setup2D(width, height);
 
-        // Set light gray background like your example
         glClearColor(0.95f, 0.95f, 0.95f, 1.0f);
     }
 
@@ -256,7 +247,6 @@ public class Renderer {
         init();
         setup3D(width, height, 45.0f, 0.1f, 1000.0f);
 
-        // Set dark gray background for 3D
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
     }
 
