@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Random;
 
 public class MosquitoCirclingBehavior {
-    // Gewichtungen für Kreis-Verhalten
     private double separationWeight = 2.5;
     private double cohesionWeight = 0.8;
     private double randomWeight = 1.5;
@@ -20,7 +19,6 @@ public class MosquitoCirclingBehavior {
 
     private static Random random = new Random();
 
-    // Kreisverhalten-spezifische Parameter
     private double preferredCirclingRadius = 60.0;
     private double circlingSpeed = 1.2;
     private double chaosIntensity = 0.8;
@@ -29,32 +27,26 @@ public class MosquitoCirclingBehavior {
     public Vector2D getWeightedForce(Agent agent, List<Agent> neighbors) {
         Vector2D totalForce = new Vector2D();
 
-        // Separation (etwas schwächer für dichtere Kreise)
         Vector2D separation = getSeparation(agent, neighbors);
         separation.mult(separationWeight);
         totalForce.add(separation);
 
-        // Moderate Cohesion für Gruppierung
         Vector2D cohesion = getCohesion(agent, neighbors);
         cohesion.mult(cohesionWeight);
         totalForce.add(cohesion);
 
-        // Reduzierte zufällige Bewegung
         Vector2D randomMovement = getModerateRandomMovement(agent);
         randomMovement.mult(randomWeight);
         totalForce.add(randomMovement);
 
-        // Hauptverhalten: Kreisen um Lichtquellen
         Vector2D circlingForce = getCirclingForce(agent);
         circlingForce.mult(circlingWeight);
         totalForce.add(circlingForce);
 
-        // Schwache Lichtanziehung (um in Reichweite zu kommen)
         Vector2D lightAttraction = getWeakLightAttraction(agent);
         lightAttraction.mult(lightAttractionWeight);
         totalForce.add(lightAttraction);
 
-        // Seltene Richtungsänderungen
         Vector2D chaosForce = getChaosForce(agent);
         totalForce.add(chaosForce);
 
@@ -117,13 +109,11 @@ public class MosquitoCirclingBehavior {
         double intensity = 1.0;
         Vector2D randomForce = new Vector2D();
 
-        // Schwächere zufällige Bewegung
         randomForce.add(new Vector2D(
                 random.nextGaussian() * intensity,
                 random.nextGaussian() * intensity
         ));
 
-        // Seltene Impulse
         if (random.nextDouble() < 0.02) {
             double angle = random.nextDouble() * 2 * Math.PI;
             Vector2D impulse = new Vector2D(
@@ -142,7 +132,6 @@ public class MosquitoCirclingBehavior {
         for (LightSource light : LightSourceManager.getLightSources()) {
             double distance = linearAlgebra.euclideanDistance(agent.position, light.getPosition());
 
-            // Nur kreisen wenn in sinnvoller Reichweite
             if (distance < light.getRadius() * 4.0 && distance > 10.0) {
                 Vector2D circlingForce = calculateCirclingForceForLight(agent, light, distance);
                 totalCirclingForce.add(circlingForce);
@@ -156,13 +145,10 @@ public class MosquitoCirclingBehavior {
         Vector2D toLight = linearAlgebra.sub(light.getPosition(), agent.position);
         if (toLight.isNullvector()) return new Vector2D();
 
-        // 1. Radiale Kraft - hält Abstand zur Lichtquelle
         Vector2D radialForce = getRadialForce(toLight, distance);
 
-        // 2. Tangentiale Kraft - verursacht Kreisbewegung
         Vector2D tangentialForce = getTangentialForce(toLight, distance, light.getIntensity());
 
-        // Kombiniere beide Kräfte
         Vector2D combinedForce = new Vector2D();
         combinedForce.add(radialForce);
         combinedForce.add(tangentialForce);
@@ -178,10 +164,8 @@ public class MosquitoCirclingBehavior {
         double radialStrength;
 
         if (distanceError > 0) {
-            // Zu weit weg - sanft anziehen
             radialStrength = Math.min(distanceError / 30.0, 1.5);
         } else {
-            // Zu nah - abstoßen
             radialStrength = Math.max(distanceError / 20.0, -2.0);
         }
 
@@ -190,15 +174,12 @@ public class MosquitoCirclingBehavior {
     }
 
     private Vector2D getTangentialForce(Vector2D toLight, double distance, double lightIntensity) {
-        // Tangentiale Richtung (90° zur radialen Richtung)
         Vector2D tangentialDirection = linearAlgebra.vertical(toLight);
         tangentialDirection.normalize();
 
-        // Tangentiale Kraft ist stärker bei optimalem Radius
         double optimalRadiusFactor = Math.exp(-Math.abs(distance - preferredCirclingRadius) / 25.0);
         double tangentialStrength = circlingSpeed * lightIntensity * optimalRadiusFactor;
 
-        // Zufällige Richtung für Abwechslung
         if (random.nextDouble() < 0.1) {
             tangentialDirection.mult(-1);
         }
@@ -213,7 +194,6 @@ public class MosquitoCirclingBehavior {
         for (LightSource light : LightSourceManager.getLightSources()) {
             double distance = linearAlgebra.euclideanDistance(agent.position, light.getPosition());
 
-            // Nur anziehen wenn weit weg, um in Kreisreichweite zu kommen
             if (distance > preferredCirclingRadius * 1.5 && distance < light.getRadius() * 6.0) {
                 Vector2D attraction = linearAlgebra.sub(light.getPosition(), agent.position);
                 attraction.normalize();

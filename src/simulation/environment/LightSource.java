@@ -9,7 +9,6 @@ public class LightSource {
     private double intensity;
     private double radius;
 
-    // Simple flickering
     private long creationTime;
     private double baseIntensity;
 
@@ -22,19 +21,16 @@ public class LightSource {
     }
 
     public void update(double deltaTime) {
-        // Simple flickering effect
         double time = (System.currentTimeMillis() - creationTime) / 1000.0;
-        double flicker = 1.0 + Math.sin(time * 8.0) * 0.1; // Gentle flicker
+        double flicker = 1.0 + Math.sin(time * 8.0) * 0.1;
         this.intensity = baseIntensity * flicker;
     }
 
     public void render() {
         Renderer.pushMatrix();
 
-        // Calculate current flicker intensity
         double flickerFactor = intensity / baseIntensity;
 
-        // Layer 3: Outer glow (largest, most transparent)
         Renderer.setColor(1.0f, 1.0f, 0.8f, (float)(0.15 * flickerFactor));
         PrimitiveRenderer.renderCircle(
                 (float) position.x,
@@ -43,7 +39,6 @@ public class LightSource {
                 32
         );
 
-        // Layer 2: Middle glow
         Renderer.setColor(1.0f, 1.0f, 0.85f, (float)(0.3 * flickerFactor));
         PrimitiveRenderer.renderCircle(
                 (float) position.x,
@@ -52,7 +47,6 @@ public class LightSource {
                 24
         );
 
-        // Layer 1: Inner light
         Renderer.setColor(1.0f, 1.0f, 0.9f, (float)(0.7 * flickerFactor));
         PrimitiveRenderer.renderCircle(
                 (float) position.x,
@@ -61,7 +55,6 @@ public class LightSource {
                 16
         );
 
-        // Core: Bright center
         Renderer.setColor(1.0f, 1.0f, 0.95f, (float)(0.9 * flickerFactor));
         PrimitiveRenderer.renderCircle(
                 (float) position.x,
@@ -74,7 +67,6 @@ public class LightSource {
         Renderer.resetColor();
     }
 
-    // Getters and setters
     public Vector2D getPosition() { return new Vector2D(position); }
     public double getIntensity() { return intensity; }
     public double getRadius() { return radius; }

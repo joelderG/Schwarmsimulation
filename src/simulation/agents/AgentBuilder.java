@@ -60,7 +60,7 @@ public class AgentBuilder {
         if (mosquitoType != null) {
             agent = new Agent(position, mosquitoType);
         } else {
-            agent = new Agent(position); // Random type selection
+            agent = new Agent(position);
         }
 
         agent.setWorldBounds(worldWidth, worldHeight);

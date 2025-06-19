@@ -94,8 +94,8 @@ public class SimulationApplication extends Window {
         if (Mouse.isButtonDown(1)) {
             LightSource newLight = new LightSource(
                     new Vector2D(currentMousePosition),
-                    60.0, // Reduced intensity from 100.0
-                    25.0  // Reduced radius from 50.0
+                    60.0,
+                    25.0
             );
             LightSourceManager.addLightSource(newLight);
         }

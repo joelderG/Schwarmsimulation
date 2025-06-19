@@ -2,8 +2,6 @@ package engine.objects.geometry;
 
 import org.lwjgl.util.vector.Vector3f;
 
-// TODO: think about getters/setters
-
 public class faceTriangle {
     public Vector3f vertex = new Vector3f();
     public Vector3f texCoords = new Vector3f();

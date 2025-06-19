@@ -11,10 +11,10 @@ public class PrimitiveRenderer {
     private PrimitiveRenderer() {}
 
     public static void renderCircle(float x, float y, float radius, int segments) {
-        if (segments < 3) segments = 3; // Minimum segments for a circle
+        if (segments < 3) segments = 3;
 
         glBegin(GL_TRIANGLE_FAN);
-        glVertex2f(x, y); // Center point
+        glVertex2f(x, y);
 
         float angleStep = (float)(2 * Math.PI / segments);
         for(int i = 0; i <= segments; i++) {
@@ -71,7 +71,7 @@ public class PrimitiveRenderer {
         float angleStep = (float)(Math.PI / points);
 
         glBegin(GL_TRIANGLE_FAN);
-        glVertex2f(x, y); // Center point
+        glVertex2f(x, y);
 
         for (int i = 0; i <= points * 2; i++) {
             float angle = i * angleStep;
@@ -227,35 +227,27 @@ public class PrimitiveRenderer {
         glColor4f(0.05f, 0.39f, 0.51f, 1.0f);
         renderCircle(0, 0, 5, radius);
         glColor4f(0.66f, 0.87f, 0.95f, 1.0f);
-        // TODO: radius-2 hardcoded
         renderCircle(0, 0, 5, radius-2);
 
-        // velocity
-        // TODO: velocity.length()/5 hardcoded
         int off = radius + 1 + (int)(velocity.length()/5);
         double angle = linearAlgebra.angleDegree(velocity, new Vector2D(1,0));
 
-        // angle correction
         if (velocity.y<0)
             angle = 180 + (180-angle);
 
         glColor4f(0.35f, 0.63f, 0.73f, 1.0f);
-        //renderArrow(x, y, off, (float)angle, 15);
 
-        // Acceleration
         off = radius + 1 + (int)(acceleration.length()/10);
         angle = linearAlgebra.angleDegree(acceleration, new Vector2D(1,0));
         if (acceleration.y<0)
             angle = 180 + (180-angle);
 
         glColor4f(1, 0, 0, 1);
-        //renderArrow(x, y, off, (float)angle, 15);
     }
 
     public static void renderMosquito(float x, float y, float size, float rotation) {
         glPushMatrix();
 
-        // Transform to mosquito position and rotation
         glTranslatef(x, y, 0);
         glRotatef(rotation, 0, 0, 1);
 
@@ -264,8 +256,6 @@ public class PrimitiveRenderer {
         float wingLength = size * 0.8f;
         float wingWidth = size * 0.4f;
 
-        // === WINGS (behind body) ===
-        // Left wing
         glBegin(GL_TRIANGLE_FAN);
         glVertex2f(-bodyLength * 0.1f, bodyWidth * 0.5f); // Wing attachment point
         glVertex2f(-wingLength * 0.3f, wingWidth + bodyWidth * 0.5f);
@@ -274,7 +264,6 @@ public class PrimitiveRenderer {
         glVertex2f(-wingLength * 0.6f, bodyWidth * 0.3f);
         glEnd();
 
-        // Right wing
         glBegin(GL_TRIANGLE_FAN);
         glVertex2f(-bodyLength * 0.1f, -bodyWidth * 0.5f); // Wing attachment point
         glVertex2f(-wingLength * 0.3f, -wingWidth - bodyWidth * 0.5f);
@@ -283,29 +272,23 @@ public class PrimitiveRenderer {
         glVertex2f(-wingLength * 0.6f, -bodyWidth * 0.3f);
         glEnd();
 
-        // === LEGS ===
         glBegin(GL_LINES);
-        // Front legs
         glVertex2f(bodyLength * 0.2f, bodyWidth * 0.5f);
         glVertex2f(bodyLength * 0.1f, bodyWidth * 1.2f);
         glVertex2f(bodyLength * 0.2f, -bodyWidth * 0.5f);
         glVertex2f(bodyLength * 0.1f, -bodyWidth * 1.2f);
 
-        // Middle legs
         glVertex2f(-bodyLength * 0.1f, bodyWidth * 0.5f);
         glVertex2f(-bodyLength * 0.2f, bodyWidth * 1.3f);
         glVertex2f(-bodyLength * 0.1f, -bodyWidth * 0.5f);
         glVertex2f(-bodyLength * 0.2f, -bodyWidth * 1.3f);
 
-        // Back legs
         glVertex2f(-bodyLength * 0.4f, bodyWidth * 0.5f);
         glVertex2f(-bodyLength * 0.5f, bodyWidth * 1.1f);
         glVertex2f(-bodyLength * 0.4f, -bodyWidth * 0.5f);
         glVertex2f(-bodyLength * 0.5f, -bodyWidth * 1.1f);
         glEnd();
 
-        // === BODY ===
-        // Main body (abdomen)
         glBegin(GL_TRIANGLE_FAN);
         glVertex2f(-bodyLength * 0.2f, 0); // Center
         int segments = 8;
@@ -317,7 +300,6 @@ public class PrimitiveRenderer {
         }
         glEnd();
 
-        // Thorax (middle section)
         glBegin(GL_TRIANGLE_FAN);
         glVertex2f(bodyLength * 0.1f, 0);
         for (int i = 0; i <= segments; i++) {
@@ -328,22 +310,11 @@ public class PrimitiveRenderer {
         }
         glEnd();
 
-        // === HEAD ===
-        // Head circle
         renderCircle(bodyLength * 0.45f, 0, bodyWidth * 0.6f, 6);
 
-        // === PROBOSCIS (mosquito "needle") ===
         glBegin(GL_LINES);
-        glVertex2f(bodyLength * 0.45f, 0);
-        glVertex2f(bodyLength * 0.8f, 0);
-        glEnd();
-
-        // === ANTENNAE ===
-        glBegin(GL_LINES);
-        // Left antenna
         glVertex2f(bodyLength * 0.45f, bodyWidth * 0.2f);
         glVertex2f(bodyLength * 0.6f, bodyWidth * 0.4f);
-        // Right antenna
         glVertex2f(bodyLength * 0.45f, -bodyWidth * 0.2f);
         glVertex2f(bodyLength * 0.6f, -bodyWidth * 0.4f);
         glEnd();

@@ -13,6 +13,6 @@ public class SimulationConstants {
     public static final int DEFAULT_WINDOW_HEIGHT = 720;
 
     // Simple mosquito count (back to original)
-    public static final int DEFAULT_MOSQUITO_COUNT = 60;
+    public static final int DEFAULT_MOSQUITO_COUNT = 100;
     public static final int MOSQUITO_SIZE = 5;
 }

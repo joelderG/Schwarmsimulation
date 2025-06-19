@@ -32,7 +32,6 @@ public class LightSourceManager {
                 Vector2D attraction = linearAlgebra.sub(light.getPosition(), agent.position);
                 attraction.normalize();
 
-                // Stärke abhängig von Entfernung und Intensität
                 double strength = (light.getIntensity() * light.getRadius()) / (distance + 1);
                 attraction.mult(strength);
 

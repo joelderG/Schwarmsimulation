@@ -1,10 +1,8 @@
 package simulation.agents;
 
-import engine.core.Renderer;
 import engine.math.Vector2D;
 import engine.math.linearAlgebra;
 import engine.objects.renderable.baseObject;
-import engine.rendering.PrimitiveRenderer;
 import simulation.behaviors.MosquitoSwarmBehavior;
 import simulation.behaviors.MosquitoCirclingBehavior;
 
@@ -86,7 +84,6 @@ public class Agent extends baseObject {
         path = new dynamic2DPath(20);
     }
 
-    // Update the update method signature and add wind handling
     public void update(double deltaTime, List<Agent> neighbors, Vector2D mousePosition) {
         if (path.getSize() == 0 ||
                 linearAlgebra.euclideanDistance(position, path.getElement(0)) > radius * 2) {
@@ -106,14 +103,12 @@ public class Agent extends baseObject {
 
         force.truncate(MAX_FORCE);
 
-        // Physics update with turning constraints
         Vector2D deltaAcceleration = linearAlgebra.mult(force, 1.0 / MASS);
         acceleration = deltaAcceleration;
 
         velocity.add(linearAlgebra.mult(acceleration, deltaTime));
         velocity.mult(0.995);
 
-        // Apply turning constraints before limiting speed
         updatePhysicsWithTurningConstraints(deltaTime);
 
         velocity.truncate(MAX_SPEED);
@@ -151,19 +146,16 @@ public class Agent extends baseObject {
             newDesiredHeading.normalize();
 
             if (!heading.isNullvector() && !newDesiredHeading.isNullvector()) {
-                // Calculate the angle between current and desired heading
                 double currentAngle = Math.atan2(heading.y, heading.x);
                 double desiredAngle = Math.atan2(newDesiredHeading.y, newDesiredHeading.x);
 
-                // Calculate the angular difference (shortest path)
                 double angleDiff = desiredAngle - currentAngle;
 
-                // Normalize angle difference to [-π, π]
                 while (angleDiff > Math.PI) angleDiff -= 2 * Math.PI;
                 while (angleDiff < -Math.PI) angleDiff += 2 * Math.PI;
 
                 // Limit turning rate
-                double maxTurnThisFrame = MAX_TURN_RATE * (1.0 / 60.0); // Assuming 60 FPS
+                double maxTurnThisFrame = MAX_TURN_RATE * (1.0 / 60.0);
                 double actualTurn = Math.max(-maxTurnThisFrame, Math.min(maxTurnThisFrame, angleDiff));
 
                 // Apply the limited turn
@@ -180,7 +172,6 @@ public class Agent extends baseObject {
     }
 
     private void updatePhysicsWithTurningConstraints(double deltaTime) {
-        // Current velocity direction
         Vector2D currentDirection = new Vector2D();
         if (!velocity.isNullvector()) {
             currentDirection = new Vector2D(velocity);
@@ -189,7 +180,6 @@ public class Agent extends baseObject {
             currentDirection = new Vector2D(heading);
         }
 
-        // Desired direction based on forces
         Vector2D desiredDirection = new Vector2D(acceleration);
         if (!desiredDirection.isNullvector()) {
             desiredDirection.normalize();
@@ -197,7 +187,6 @@ public class Agent extends baseObject {
             desiredDirection = new Vector2D(currentDirection);
         }
 
-        // Limit direction change based on turn rate
         if (!currentDirection.isNullvector() && !desiredDirection.isNullvector()) {
             double currentAngle = Math.atan2(currentDirection.y, currentDirection.x);
             double desiredAngle = Math.atan2(desiredDirection.y, desiredDirection.x);
@@ -212,7 +201,6 @@ public class Agent extends baseObject {
             double newAngle = currentAngle + actualTurn;
             Vector2D limitedDirection = new Vector2D(Math.cos(newAngle), Math.sin(newAngle));
 
-            // Apply the limited direction to velocity
             double currentSpeed = velocity.length();
             velocity = linearAlgebra.mult(limitedDirection, currentSpeed);
         }
